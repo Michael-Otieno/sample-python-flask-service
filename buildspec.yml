@@ -10,50 +10,18 @@ phases:
   install:
     runtime-versions:
       python: 3.12
-    commands:
-      - echo "Upgrading pip..."
-      - pip install --upgrade pip
-
   pre_build:
     commands:
-      - echo "Installing dependencies..."
       - pip install -r requirements.txt
       - echo "Logging in to Docker Hub..."
       - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin
-      - docker info | grep Username || echo "Docker login failed!"
-      
+
   build:
     commands:
-      - IMAGE_NAME="motieno205/simple-python-flask-app"
-      - echo "Building Docker image..."
-      - echo "$IMAGE_NAME"
-      - docker build -t "$IMAGE_NAME:latest" .
-      - docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:1"
+      - echo "Building docker image"
+      - docker build -t "$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
       - echo "Pushing Docker images..."
-      - docker push "$IMAGE_NAME:latest"
-      - docker push "$IMAGE_NAME:1"
-      - echo "Listing available tags from Docker Hub..."
-      - curl -s -u "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD" \
-          https://hub.docker.com/v2/repositories/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app/tags | jq .
-  # build:
-  #   commands:
-  #     - echo "Building Docker image..."
-  #     - IMAGE_NAME="$DOCKER_REGISTRY_USERNAME/simple-python-flask-app"
-  #     - docker build -t "$IMAGE_NAME:latest" .
-  #     - echo "Pushing Docker image to Docker Hub..."
-  #     - docker push "$IMAGE_NAME:latest"
-  # build:
-  #   commands:
-  #     - echo "Building Docker image..."
-  #     - docker build -t "$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
-  #     - echo "Pushing Docker image..."
-  #     - docker push "$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
-
+      - docker push "$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
   post_build:
     commands:
       - echo "Build completed successfully!"
-
-artifacts:
-  files:
-    - '**/*'
-  base-directory: /
